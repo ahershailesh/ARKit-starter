@@ -73,7 +73,7 @@ class Plane: SCNNode {
         // Use color and blend mode to make planes stand out.
         guard let material = meshNode.geometry?.firstMaterial
             else { fatalError("ARSCNPlaneGeometry always has one material") }
-        material.diffuse.contents = UIColor.planeColor
+        material.diffuse.contents = UIColor.blue
     }
     
     private func setupExtentVisualStyle() {

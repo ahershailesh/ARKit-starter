@@ -37,6 +37,9 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate {
         
         // Show debug UI to view performance metrics (e.g. frames per second).
         sceneView.showsStatistics = true
+        
+        showImage()
+        showCar()
     }
 
     override func viewWillDisappear(_ animated: Bool) {
@@ -50,17 +53,47 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate {
     
     /// - Tag: PlaceARContent
     func renderer(_ renderer: SCNSceneRenderer, didAdd node: SCNNode, for anchor: ARAnchor) {
-        // Place content only for anchors found by plane detection.
+        showPlan(node: node, anchor: anchor)
+    }
+    
+    private func showPlan(node: SCNNode, anchor: ARAnchor) {
         guard let planeAnchor = anchor as? ARPlaneAnchor else { return }
-        
-        // Create a custom object to visualize the plane geometry and extent.
         let plane = Plane(anchor: planeAnchor, in: sceneView)
-        
-        // Add the visualization to the ARKit-managed node so that it tracks
-        // changes in the plane anchor as plane estimation continues.
         node.addChildNode(plane)
     }
-
+    
+    private func showImage() {
+        //a. Create An SCNPlane Geometry
+        let planeGeometry = SCNPlane(width: 0.1, height: 0.1)
+        
+        //b. Set's It's Contents To The Picked Image
+        planeGeometry.firstMaterial?.diffuse.contents = UIImage(named: "dicomsample")
+        
+        //c. Set The Geometry & Add It To The Scene
+        
+        guard let meshGeometry = ARSCNPlaneGeometry(device: sceneView.device!)
+            else { fatalError("Can't create plane geometry") }
+        
+        let planeNode = SCNNode(geometry: meshGeometry)
+        planeNode.geometry = planeGeometry
+        planeNode.position = SCNVector3(-0.1, 0, -0.5)
+        sceneView.scene.rootNode.addChildNode(planeNode)
+    }
+    
+    func showCar(x: Float = 0, y: Float = 0, z: Float = -0.5) {
+        guard let carScene = SCNScene(named: "stratocaster") else { return }
+        let carNode = SCNNode()
+        let carSceneChildNodes = carScene.rootNode.childNodes
+        for childNode in carSceneChildNodes {
+            carNode.addChildNode(childNode)
+        }
+        carNode.position = SCNVector3(x, y, z)
+        carNode.scale = SCNVector3(0.5, 0.5, 0.5)
+//        sceneView.scene.rootNode.addChildNode(carNode)
+        sceneView.scene = carScene
+    }
+    
+    
     /// - Tag: UpdateARContent
     func renderer(_ renderer: SCNSceneRenderer, didUpdate node: SCNNode, for anchor: ARAnchor) {
         // Update only anchors and nodes set up by `renderer(_:didAdd:for:)`.
